@@ -137,15 +137,19 @@ case $REPLY in
         ;;
     2)
         echo ""
-        echo "Deleting application files (keeping credentials.json)..."
+        echo "Deleting application files (keeping credentials.json and .env)..."
         rm -rf "$INSTALL_DIR/node_modules"
         rm -f "$INSTALL_DIR/server.js"
         rm -f "$INSTALL_DIR/package.json"
         rm -f "$INSTALL_DIR/package-lock.json"
-        rm -f "$INSTALL_DIR/test-auth.js"
-        rm -f "$INSTALL_DIR/setup.sh"
+        rm -f "$INSTALL_DIR/.gitignore"
+        rm -f "$INSTALL_DIR/.env.example"
+        rm -f "$INSTALL_DIR/README.md"
+        rm -f "$INSTALL_DIR/uninstall.sh"
         echo "✓ Application files deleted"
-        echo "✓ Kept: credentials.json (for future reinstall)"
+        echo "✓ Kept: credentials.json and .env (for future reinstall)"
+        echo ""
+        echo "Remaining files:"
         ls -la "$INSTALL_DIR"
         ;;
     3)
