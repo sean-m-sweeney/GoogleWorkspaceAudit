@@ -1,0 +1,16 @@
+# CRITICAL: Never commit credentials!
+credentials.json
+*.json.key
+*-key.json
+
+# Dependencies
+node_modules/
+
+# OS Files
+.DS_Store
+
+# Logs
+*.log
+
+# Environment
+.env

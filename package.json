@@ -1,0 +1,15 @@
+{
+  "name": "workspace-cmmc-audit",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Google Workspace CMMC Level 2 Compliance Audit Tool",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "dotenv": "^17.2.3",
+    "googleapis": "^166.0.0"
+  }
+}
