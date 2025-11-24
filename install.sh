@@ -194,18 +194,30 @@ echo ""
 # Proactively fix npm cache permissions (common issue on Macs)
 # This prevents EACCES errors before they happen
 if [ -d "$HOME/.npm" ]; then
-    # Check if there are any root-owned files in npm cache
-    if find "$HOME/.npm" -user root -print -quit 2>/dev/null | grep -q .; then
-        echo "Fixing npm cache permissions (root-owned files detected)..."
-        sudo chown -R $(whoami) "$HOME/.npm" 2>/dev/null || {
-            echo "⚠ Could not fix npm cache permissions automatically."
-            echo "  Please run: sudo chown -R \$(whoami) ~/.npm"
-            echo "  Then run the installer again."
+    echo "Checking npm cache permissions..."
+
+    # Check for root-owned files anywhere in the npm cache
+    # This is a common issue from running npm with sudo previously
+    ROOT_FILES=$(find "$HOME/.npm" -user 0 2>/dev/null | head -1)
+
+    if [ -n "$ROOT_FILES" ]; then
+        echo "⚠ Found root-owned files in npm cache. Fixing with sudo..."
+        echo ""
+        # Need to prompt for sudo password - requires TTY
+        sudo chown -R $(whoami) "$HOME/.npm" < /dev/tty || {
+            echo ""
+            echo "✗ Could not fix npm cache permissions."
+            echo ""
+            echo "Please run this command manually, then try the installer again:"
+            echo "  sudo chown -R \$(whoami) ~/.npm"
+            echo ""
             exit 1
         }
         echo "✓ npm cache permissions fixed"
-        echo ""
+    else
+        echo "✓ npm cache permissions OK"
     fi
+    echo ""
 fi
 
 echo "Running npm install..."
