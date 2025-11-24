@@ -190,51 +190,65 @@ echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓�
 echo "   STEP 3: Installing Dependencies"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
+
+# Proactively fix npm cache permissions (common issue on Macs)
+# This prevents EACCES errors before they happen
+if [ -d "$HOME/.npm" ]; then
+    # Check if there are any root-owned files in npm cache
+    if find "$HOME/.npm" -user root -print -quit 2>/dev/null | grep -q .; then
+        echo "Fixing npm cache permissions (root-owned files detected)..."
+        sudo chown -R $(whoami) "$HOME/.npm" 2>/dev/null || {
+            echo "⚠ Could not fix npm cache permissions automatically."
+            echo "  Please run: sudo chown -R \$(whoami) ~/.npm"
+            echo "  Then run the installer again."
+            exit 1
+        }
+        echo "✓ npm cache permissions fixed"
+        echo ""
+    fi
+fi
+
 echo "Running npm install..."
 echo ""
 
-# Try npm install, and if it fails due to permissions, attempt to fix automatically
-if ! npm install 2>&1 | tee /tmp/npm-install.log; then
+# Run npm install and capture output
+npm install 2>&1 | tee /tmp/npm-install.log
+NPM_EXIT_CODE=${PIPESTATUS[0]}
+
+# Check if npm install failed
+if [ $NPM_EXIT_CODE -ne 0 ] || grep -q "npm error" /tmp/npm-install.log; then
+    echo ""
+    echo "⚠ npm install encountered errors"
+
     # Check if it's a permissions/EACCES error
     if grep -q "EACCES" /tmp/npm-install.log; then
         echo ""
-        echo "⚠ Detected npm permissions issue. Attempting automatic fix..."
+        echo "Detected npm permissions issue. Attempting fix..."
         echo ""
 
-        # Fix npm cache permissions (common issue with root-owned files)
-        NPM_CACHE_DIR=$(npm config get cache 2>/dev/null || echo "$HOME/.npm")
-        if [ -d "$NPM_CACHE_DIR" ]; then
-            echo "  Fixing permissions on npm cache: $NPM_CACHE_DIR"
-            sudo chown -R $(whoami) "$NPM_CACHE_DIR" 2>/dev/null || {
-                echo "  Could not fix with sudo, trying without..."
-                # Try to fix what we can without sudo
-                find "$NPM_CACHE_DIR" -user root -exec sudo chown $(whoami) {} \; 2>/dev/null || true
-            }
-        fi
+        sudo chown -R $(whoami) "$HOME/.npm" 2>/dev/null || {
+            echo "✗ Could not fix npm permissions."
+            echo ""
+            echo "Please run this command manually, then try the installer again:"
+            echo "  sudo chown -R \$(whoami) ~/.npm"
+            echo ""
+            rm -f /tmp/npm-install.log
+            exit 1
+        }
 
-        # Also fix common npm directories that might have permission issues
-        for dir in "$HOME/.npm" "$HOME/.npm/_cacache" "$HOME/.npm/_logs"; do
-            if [ -d "$dir" ]; then
-                sudo chown -R $(whoami) "$dir" 2>/dev/null || true
-            fi
-        done
-
-        echo "  Retrying npm install..."
+        echo "✓ Permissions fixed. Retrying npm install..."
         echo ""
 
         if ! npm install; then
             echo ""
-            echo "✗ Failed to install dependencies"
-            echo ""
-            echo "Manual fix: Run these commands and try the installer again:"
-            echo "  sudo chown -R \$(whoami) ~/.npm"
-            echo ""
+            echo "✗ Failed to install dependencies after fixing permissions"
             rm -f /tmp/npm-install.log
             exit 1
         fi
     else
         echo ""
         echo "✗ Failed to install dependencies"
+        echo "Check the error messages above for details."
         rm -f /tmp/npm-install.log
         exit 1
     fi
