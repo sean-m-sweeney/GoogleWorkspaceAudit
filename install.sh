@@ -405,7 +405,8 @@ if 'mcpServers' not in config:
     config['mcpServers'] = {}
 config['mcpServers']['workspace-audit'] = {
     'command': '$NODE_PATH',
-    'args': ['$INSTALL_DIR/server.js']
+    'args': ['$INSTALL_DIR/server.js'],
+    'cwd': '$INSTALL_DIR'
 }
 with open('$CLAUDE_CONFIG', 'w') as f:
     json.dump(config, f, indent=2)
@@ -416,7 +417,8 @@ else
   "mcpServers": {
     "workspace-audit": {
       "command": "$NODE_PATH",
-      "args": ["$INSTALL_DIR/server.js"]
+      "args": ["$INSTALL_DIR/server.js"],
+      "cwd": "$INSTALL_DIR"
     }
   }
 }

@@ -12,10 +12,11 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import dotenv from 'dotenv';
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Load .env from the same directory as server.js (not cwd)
+dotenv.config({ path: join(__dirname, '.env') });
 
 const credentials = JSON.parse(fs.readFileSync(join(__dirname, 'credentials.json'), 'utf8'));
 const ADMIN_EMAIL = process.env.GOOGLE_WORKSPACE_ADMIN_EMAIL;

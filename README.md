@@ -386,11 +386,14 @@ nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
   "mcpServers": {
     "workspace-audit": {
       "command": "/usr/local/bin/node",
-      "args": ["/Users/YOUR_USERNAME/workspace-cmmc-audit/server.js"]
+      "args": ["/Users/YOUR_USERNAME/workspace-cmmc-audit/server.js"],
+      "cwd": "/Users/YOUR_USERNAME/workspace-cmmc-audit"
     }
   }
 }
 ```
+
+**Note:** The `cwd` field is required so the server can find the `.env` and `credentials.json` files.
 
 **D. Save and exit:** Press `Ctrl+X`, then `Y`, then `Enter`
 
