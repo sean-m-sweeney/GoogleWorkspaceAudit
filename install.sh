@@ -125,12 +125,16 @@ else
     curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/server.js -o server.js
     curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/uninstall.sh -o uninstall.sh
     curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/README.md -o README.md
+    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/package.json -o package.json
+    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/package-lock.json -o package-lock.json
     chmod +x uninstall.sh
     echo "✓ Downloaded files"
 fi
 
-# Create package.json
-cat > package.json << 'PACKAGE_EOF'
+# Verify package.json exists (should have been downloaded or copied)
+if [ ! -f "package.json" ]; then
+    echo "✗ package.json not found - creating it..."
+    cat > package.json << 'PACKAGE_EOF'
 {
   "name": "workspace-cmmc-audit",
   "version": "1.0.0",
@@ -147,7 +151,8 @@ cat > package.json << 'PACKAGE_EOF'
   }
 }
 PACKAGE_EOF
-echo "✓ Created package.json"
+fi
+echo "✓ package.json ready"
 
 # Create .gitignore
 cat > .gitignore << 'GITIGNORE_EOF'
@@ -237,8 +242,32 @@ fi
 
 rm -f /tmp/npm-install.log
 
+# Verify critical dependencies were installed
 echo ""
-echo "✓ Dependencies installed"
+echo "Verifying dependencies..."
+if [ ! -d "node_modules/@modelcontextprotocol/sdk" ]; then
+    echo "✗ Critical dependency @modelcontextprotocol/sdk not found!"
+    echo ""
+    echo "Attempting to reinstall..."
+    rm -rf node_modules package-lock.json
+    npm install
+
+    if [ ! -d "node_modules/@modelcontextprotocol/sdk" ]; then
+        echo "✗ Failed to install @modelcontextprotocol/sdk"
+        echo ""
+        echo "Please try manually:"
+        echo "  cd $INSTALL_DIR"
+        echo "  npm install"
+        exit 1
+    fi
+fi
+
+if [ ! -d "node_modules/googleapis" ]; then
+    echo "✗ Critical dependency googleapis not found!"
+    exit 1
+fi
+
+echo "✓ All dependencies verified"
 echo ""
 
 # Step 4: Google Cloud Setup Guide
