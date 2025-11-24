@@ -8,8 +8,8 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.6.0",
-    "dotenv": "^16.4.5",
-    "googleapis": "^166.0.0"
+    "@modelcontextprotocol/sdk": "0.6.1",
+    "dotenv": "16.4.5",
+    "googleapis": "166.0.0"
   }
 }

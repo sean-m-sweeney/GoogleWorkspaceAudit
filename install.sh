@@ -145,9 +145,9 @@ if [ ! -f "package.json" ]; then
     "start": "node server.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.6.0",
-    "googleapis": "^166.0.0",
-    "dotenv": "^16.4.5"
+    "@modelcontextprotocol/sdk": "0.6.1",
+    "dotenv": "16.4.5",
+    "googleapis": "166.0.0"
   }
 }
 PACKAGE_EOF
