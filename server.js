@@ -21,6 +21,154 @@ dotenv.config({ path: join(__dirname, '.env') });
 const credentials = JSON.parse(fs.readFileSync(join(__dirname, 'credentials.json'), 'utf8'));
 const ADMIN_EMAIL = process.env.GOOGLE_WORKSPACE_ADMIN_EMAIL;
 
+// Compliance framework mappings for each check
+const COMPLIANCE_MAPPINGS = {
+  check_2fa_status: {
+    CMMC: 'IA.L2-3.5.3',
+    NIST_800_171: '3.5.3',
+    NIST_CSF: 'PR.AA-01',
+    ISO_27001: 'A.5.17',
+    HIPAA: '164.312(d)',
+    FTC: '314.4(c)(5)'
+  },
+  check_admin_roles: {
+    CMMC: 'AC.L2-3.1.1',
+    NIST_800_171: '3.1.1',
+    NIST_CSF: 'PR.AA-05',
+    ISO_27001: 'A.9.2.3',
+    HIPAA: '164.308(a)(4)',
+    FTC: '314.4(c)(1)'
+  },
+  check_session_settings: {
+    CMMC: 'AC.L2-3.1.11',
+    NIST_800_171: '3.1.11',
+    NIST_CSF: 'PR.AC-01',
+    ISO_27001: 'A.8.2',
+    HIPAA: '164.312(a)(2)(iii)',
+    FTC: '314.4(c)(1)'
+  },
+  check_external_sharing: {
+    CMMC: 'AC.L2-3.1.20',
+    NIST_800_171: '3.1.20',
+    NIST_CSF: 'PR.DS-05',
+    ISO_27001: 'A.8.12',
+    HIPAA: '164.312(e)(1)',
+    FTC: '314.4(c)(3)'
+  },
+  check_api_access: {
+    CMMC: 'AC.L2-3.1.2',
+    NIST_800_171: '3.1.2',
+    NIST_CSF: 'PR.AA-05',
+    ISO_27001: 'A.9.4.1',
+    HIPAA: '164.312(a)(1)',
+    FTC: '314.4(c)(1)'
+  },
+  check_groups_external_members: {
+    CMMC: 'AC.L2-3.1.20',
+    NIST_800_171: '3.1.20',
+    NIST_CSF: 'PR.AC-04',
+    ISO_27001: 'A.9.2.5',
+    HIPAA: '164.312(a)(1)',
+    FTC: '314.4(c)(3)'
+  },
+  check_password_policy: {
+    CMMC: 'IA.L2-3.5.7',
+    NIST_800_171: '3.5.7',
+    NIST_CSF: 'PR.AA-01',
+    ISO_27001: 'A.5.17',
+    HIPAA: '164.308(a)(5)(ii)(D)',
+    FTC: '314.4(c)(5)'
+  },
+  check_inactive_accounts: {
+    CMMC: 'AC.L2-3.1.1',
+    NIST_800_171: '3.1.1',
+    NIST_CSF: 'PR.AA-05',
+    ISO_27001: 'A.9.2.6',
+    HIPAA: '164.308(a)(4)(ii)(C)',
+    FTC: '314.4(c)(1)'
+  },
+  check_audit_log_settings: {
+    CMMC: 'AU.L2-3.3.1',
+    NIST_800_171: '3.3.1',
+    NIST_CSF: 'DE.AE-01',
+    ISO_27001: 'A.8.15',
+    HIPAA: '164.312(b)',
+    FTC: '314.4(c)(2)'
+  },
+  check_suspicious_activity: {
+    CMMC: 'AU.L2-3.3.4',
+    NIST_800_171: '3.3.4',
+    NIST_CSF: 'DE.AE-03',
+    ISO_27001: 'A.8.16',
+    HIPAA: '164.308(a)(1)(ii)(D)',
+    FTC: '314.4(c)(2)'
+  },
+  check_mobile_devices: {
+    CMMC: 'SC.L2-3.13.11',
+    NIST_800_171: '3.13.11',
+    NIST_CSF: 'PR.DS-01',
+    ISO_27001: 'A.8.24',
+    HIPAA: '164.312(a)(2)(iv)',
+    FTC: '314.4(c)(4)'
+  },
+  check_email_authentication: {
+    CMMC: 'SC.L2-3.13.8',
+    NIST_800_171: '3.13.8',
+    NIST_CSF: 'PR.DS-02',
+    ISO_27001: 'A.8.21',
+    HIPAA: '164.312(e)(2)(ii)',
+    FTC: '314.4(c)(4)'
+  },
+  check_email_forwarding: {
+    CMMC: 'AC.L2-3.1.20',
+    NIST_800_171: '3.1.20',
+    NIST_CSF: 'PR.DS-05',
+    ISO_27001: 'A.8.12',
+    HIPAA: '164.312(e)(1)',
+    FTC: '314.4(c)(3)'
+  },
+  check_calendar_sharing: {
+    CMMC: 'AC.L2-3.1.20',
+    NIST_800_171: '3.1.20',
+    NIST_CSF: 'PR.DS-05',
+    ISO_27001: 'A.8.12',
+    HIPAA: '164.312(e)(1)',
+    FTC: '314.4(c)(3)'
+  },
+  check_data_regions: {
+    CMMC: 'SC.L2-3.13.16',
+    NIST_800_171: '3.13.16',
+    NIST_CSF: 'PR.DS-01',
+    ISO_27001: 'A.8.10',
+    HIPAA: '164.312(a)(2)(iv)'
+    // FTC not applicable for data regions
+  },
+  check_shared_drives: {
+    CMMC: 'AC.L2-3.1.20',
+    NIST_800_171: '3.1.20',
+    NIST_CSF: 'PR.DS-05',
+    ISO_27001: 'A.8.12',
+    HIPAA: '164.312(e)(1)',
+    FTC: '314.4(c)(3)'
+  },
+  check_license_utilization: {
+    // Operational check, not directly mapped to compliance controls
+    CMMC: 'CM.L2-3.4.1',
+    NIST_800_171: '3.4.1',
+    NIST_CSF: 'ID.AM-01'
+  },
+  check_storage_usage: {
+    // Operational check, limited compliance mapping
+    CMMC: 'CM.L2-3.4.1',
+    NIST_800_171: '3.4.1',
+    NIST_CSF: 'ID.AM-01'
+  },
+  check_baa_status: {
+    // HIPAA-only
+    HIPAA: '164.308(b)(1)'
+  }
+};
+
 if (!ADMIN_EMAIL) {
   console.error('ERROR: GOOGLE_WORKSPACE_ADMIN_EMAIL environment variable is not set');
   console.error('Please create a .env file with: GOOGLE_WORKSPACE_ADMIN_EMAIL=your-admin@yourdomain.com');
@@ -122,14 +270,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       // WORKFLOW ORCHESTRATION
       {
-        name: 'start_cmmc_audit',
-        description: 'Start a comprehensive CMMC Level 2 audit with guided interactive workflow. Use this tool when the user requests a full audit.',
+        name: 'start_compliance_audit',
+        description: 'Start a comprehensive compliance audit with guided interactive workflow. User must select which compliance frameworks to assess against. Supported frameworks: CMMC, NIST 800-171, NIST CSF, ISO 27001, HIPAA, FTC Safeguards Rule.',
         inputSchema: {
           type: 'object',
           properties: {
-            domain: { type: 'string', description: 'The Google Workspace domain to audit' }
+            domain: { type: 'string', description: 'The Google Workspace domain to audit' },
+            frameworks: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: ['CMMC', 'NIST_800_171', 'NIST_CSF', 'ISO_27001', 'HIPAA', 'FTC']
+              },
+              description: 'Compliance frameworks to assess against. Select one or more: CMMC, NIST_800_171, NIST_CSF, ISO_27001, HIPAA, FTC'
+            }
           },
-          required: ['domain']
+          required: ['domain', 'frameworks']
         }
       },
       // ACCESS CONTROL
@@ -335,10 +491,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['domain']
         }
       },
+      // HIPAA-SPECIFIC
+      {
+        name: 'check_baa_status',
+        description: 'Check HIPAA Business Associate Agreement (BAA) status. Only relevant for HIPAA compliance.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            domain: { type: 'string', description: 'The Google Workspace domain to check' }
+          },
+          required: ['domain']
+        }
+      },
       // REPORTING
       {
         name: 'generate_comprehensive_report',
-        description: 'Generate a comprehensive CMMC audit report from collected findings',
+        description: 'Generate a comprehensive compliance audit report from collected findings. Supports multiple frameworks.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -347,12 +515,20 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               type: 'object',
               description: 'Collected audit findings from all checks (as JSON object)'
             },
+            active_frameworks: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: ['CMMC', 'NIST_800_171', 'NIST_CSF', 'ISO_27001', 'HIPAA', 'FTC']
+              },
+              description: 'Frameworks the audit was conducted against'
+            },
             context_notes: {
               type: 'string',
               description: 'Optional additional context gathered during Q&A sessions'
             }
           },
-          required: ['domain', 'findings']
+          required: ['domain', 'findings', 'active_frameworks']
         }
       }
     ]
@@ -365,9 +541,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     // WORKFLOW ORCHESTRATION
-    if (toolName === 'start_cmmc_audit') {
+    if (toolName === 'start_compliance_audit') {
+      const frameworks = request.params.arguments.frameworks || ['CMMC'];
+      const frameworkList = frameworks.join(', ');
+      const includesHIPAA = frameworks.includes('HIPAA');
+
       const workflowInstructions = `
-# CMMC Level 2 Audit Workflow Started for ${domain}
+# Compliance Audit Workflow Started for ${domain}
+## Selected Frameworks: ${frameworkList}
 
 Follow this structured workflow to conduct a comprehensive audit:
 
@@ -377,6 +558,7 @@ Before running ANY checks, ask the user these questions:
 
 1. "Can you describe in a couple of sentences what your business does?"
 2. "How many employees does your organization have?"
+${includesHIPAA ? '3. "Does your organization handle Protected Health Information (PHI)?"' : ''}
 
 **Store this information** - you'll use it to contextualize findings and include in the final report.
 
@@ -458,6 +640,7 @@ Run these tools:
 - check_shared_drives
 - check_license_utilization
 - check_storage_usage
+${includesHIPAA ? '- check_baa_status (HIPAA only)' : ''}
 
 **After displaying results, STOP and ask:**
 1. "Would you like recommendations on removing inactive licenses for cost savings?"
@@ -551,7 +734,7 @@ findings = {
   "check_2fa_status": { result from that check },
   "check_admin_roles": { result from that check },
   "check_password_policy": { result from that check, including manual verification if done },
-  ... (all 18 checks)
+  ... (all checks performed)
 }
 
 **Then call: generate_comprehensive_report**
@@ -559,6 +742,7 @@ findings = {
 Parameters:
 - domain: ${domain}
 - findings: The findings object above (as a JSON object, not a string)
+- active_frameworks: ${JSON.stringify(frameworks)}
 - context_notes: Text containing all context:
 
 "BUSINESS CONTEXT:
@@ -577,8 +761,8 @@ Email Authentication: [findings from DNS lookup or screenshot]
 
 Present the final report with:
 - Executive summary (include business context)
-- Compliance score
-- Findings by control area
+- Compliance score per framework (${frameworkList})
+- Findings grouped by selected framework controls
 - Priority recommendations
 - Cost optimization opportunities
 - Next steps
@@ -628,7 +812,7 @@ Start with Phase 0 now!
         mfa_enforced: usersWithout2FA === 0,
         users_without_mfa: usersWithout2FA,
         admin_accounts_without_mfa: adminWithout2FA,
-        cmmc_control: 'IA.L2-3.5.3',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_2fa_status,
         recommendation: usersWithout2FA > 0
           ? 'Enable 2FA enforcement for all users. Require hardware security keys for admin accounts.'
           : 'All users have 2FA enabled. Consider requiring hardware security keys for privileged accounts.',
@@ -659,7 +843,7 @@ Start with Phase 0 now!
           has_2fa: u.isEnrolledIn2Sv,
           suspended: u.suspended
         })),
-        cmmc_control: 'AC.L2-3.1.5',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_admin_roles,
         recommendation: adminUsers.length > 2
           ? 'Review admin access. Limit super admin privileges to essential personnel only.'
           : 'Admin account count is reasonable. Ensure all admins have hardware security keys.',
@@ -702,9 +886,9 @@ Start with Phase 0 now!
         total_groups: groups.data.groups?.length || 0,
         groups_with_external_members: groupsWithExternal.length,
         external_access_details: groupsWithExternal,
-        cmmc_control: 'AC.L2-3.1.20',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_groups_external_members,
         recommendation: groupsWithExternal.length > 0
-          ? 'Review groups with external members. Ensure external access is authorized and necessary. Remove external members from groups that handle CUI.'
+          ? 'Review groups with external members. Ensure external access is authorized and necessary. Remove external members from groups that handle CUI or PHI.'
           : 'No groups found with external members.',
         licensing_note: 'Group management included in all Google Workspace editions.'
       };
@@ -715,7 +899,7 @@ Start with Phase 0 now!
     if (toolName === 'check_session_settings') {
       const result = {
         domain: domain,
-        cmmc_control: 'AC.L2-3.1.11',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_session_settings,
         status: 'Manual verification required',
         what_to_check: [
           'Google Admin Console > Security > Session control',
@@ -723,7 +907,7 @@ Start with Phase 0 now!
           'Session length for mobile devices',
           'Idle timeout settings'
         ],
-        cmmc_requirement: 'Sessions should terminate after 15 minutes of inactivity or 8 hours maximum',
+        requirement: 'Sessions should terminate after 15 minutes of inactivity or 8 hours maximum',
         recommendation: 'Set session length to 8 hours maximum. Enable idle timeout at 15 minutes.',
         licensing_note: 'Session controls require Google Workspace Enterprise editions.',
         licensing_impact: 'Requires Enterprise Standard, Enterprise Plus, or Education Plus (~$18-23/user/month).'
@@ -735,7 +919,7 @@ Start with Phase 0 now!
     if (toolName === 'check_external_sharing') {
       const result = {
         domain: domain,
-        cmmc_control: 'AC.L2-3.1.20',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_external_sharing,
         status: 'Manual verification required',
         what_to_check: [
           'Google Admin Console > Apps > Google Workspace > Drive and Docs',
@@ -744,10 +928,10 @@ Start with Phase 0 now!
           'Who can publish files to web',
           'Warning when sharing outside domain'
         ],
-        cmmc_requirement: 'Control external sharing. Restrict CUI to authorized personnel only.',
+        requirement: 'Control external sharing. Restrict sensitive data (CUI/PHI) to authorized personnel only.',
         recommendation: 'Set sharing to organization only OR require approval for external shares. Enable warnings for external sharing.',
         licensing_note: 'Basic sharing controls included in all editions.',
-        licensing_impact: 'Data Loss Prevention (DLP) for automated CUI detection requires Enterprise editions.'
+        licensing_impact: 'Data Loss Prevention (DLP) for automated sensitive data detection requires Enterprise editions.'
       };
 
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
@@ -756,7 +940,7 @@ Start with Phase 0 now!
     if (toolName === 'check_api_access') {
       const result = {
         domain: domain,
-        cmmc_control: 'AC.L2-3.1.2',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_api_access,
         status: 'Manual verification required',
         what_to_check: [
           'Google Admin Console > Security > API controls',
@@ -765,7 +949,7 @@ Start with Phase 0 now!
           'OAuth app verification status',
           'Risky apps with access to sensitive scopes'
         ],
-        cmmc_requirement: 'Limit system access to authorized users, processes, or devices.',
+        requirement: 'Limit system access to authorized users, processes, or devices.',
         recommendation: 'Review all third-party apps. Remove unnecessary apps. Consider restricting to allow-listed apps only.',
         licensing_note: 'API controls included in all editions.',
         licensing_impact: 'Context-aware access policies require Enterprise editions.'
@@ -778,7 +962,7 @@ Start with Phase 0 now!
     if (toolName === 'check_password_policy') {
       const result = {
         domain: domain,
-        cmmc_control: 'IA.L2-3.5.7',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_password_policy,
         status: 'Manual verification required',
         what_to_check: [
           'Google Admin Console > Security > Password management',
@@ -787,7 +971,7 @@ Start with Phase 0 now!
           'Password reuse prevention',
           'Password expiration policy'
         ],
-        cmmc_requirement: 'Passwords must be minimum 12 characters. Prevent password reuse for last 24 passwords.',
+        requirement: 'Passwords must be minimum 12 characters. Prevent password reuse for last 24 passwords.',
         recommendation: 'Configure: 12+ character minimum, enable password reuse prevention for 24 passwords.',
         licensing_note: 'Basic password policies included in all editions.'
       };
@@ -832,7 +1016,7 @@ Start with Phase 0 now!
         total_users: users.length,
         inactive_accounts: inactiveAccounts.length,
         inactive_account_details: inactiveAccounts,
-        cmmc_control: 'AC.L2-3.1.1',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_inactive_accounts,
         recommendation: inactiveAccounts.length > 0
           ? `Found ${inactiveAccounts.length} inactive accounts. Suspend or remove accounts that are no longer needed. This reduces security risk and may save on licensing costs.`
           : 'No inactive accounts found.',
@@ -847,7 +1031,7 @@ Start with Phase 0 now!
     if (toolName === 'check_audit_log_settings') {
       const result = {
         domain: domain,
-        cmmc_control: 'AU.L2-3.3.1',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_audit_log_settings,
         status: 'Partial - Manual verification required',
         automatic_checks: {
           audit_logs_enabled: true,
@@ -861,10 +1045,10 @@ Start with Phase 0 now!
           'Login audit logs: 6 months',
           'Drive audit logs: 6 months'
         ],
-        cmmc_requirement: 'Create and retain audit records. Logs must be retained for at least 1 year for CMMC Level 2.',
-        recommendation: 'Export and archive critical audit logs to meet 1-year retention requirement. Consider third-party SIEM for long-term log retention.',
+        requirement: 'Create and retain audit records. Logs must be retained for at least 1 year for most compliance frameworks.',
+        recommendation: 'Export and archive critical audit logs to meet retention requirements. Consider third-party SIEM for long-term log retention.',
         licensing_note: 'Basic audit logs included in all editions.',
-        licensing_impact: 'Extended log retention via Google Vault requires Business Plus or Enterprise editions. Third-party SIEM integration may be needed for full CMMC compliance.'
+        licensing_impact: 'Extended log retention via Google Vault requires Business Plus or Enterprise editions. Third-party SIEM integration may be needed for full compliance.'
       };
 
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
@@ -901,7 +1085,7 @@ Start with Phase 0 now!
             timestamp: e.id?.time,
             ip_address: e.ipAddress
           })),
-          cmmc_control: 'AU.L2-3.3.4',
+          compliance_mappings: COMPLIANCE_MAPPINGS.check_suspicious_activity,
           recommendation: suspiciousEvents.length > 0
             ? 'Review suspicious login attempts. Investigate failed logins and implement account lockout policies if needed.'
             : 'No suspicious activity detected in the last 7 days.',
@@ -914,7 +1098,7 @@ Start with Phase 0 now!
           content: [{ type: 'text', text: JSON.stringify({
             domain: domain,
             error: 'Unable to retrieve security events. May require additional API permissions.',
-            cmmc_control: 'AU.L2-3.3.4'
+            compliance_mappings: COMPLIANCE_MAPPINGS.check_suspicious_activity
           }, null, 2) }]
         };
       }
@@ -945,7 +1129,7 @@ Start with Phase 0 now!
             last_sync: d.lastSync,
             device_id: d.resourceId
           })),
-          cmmc_control: 'SC.L2-3.13.11',
+          compliance_mappings: COMPLIANCE_MAPPINGS.check_mobile_devices,
           recommendation: unapprovedDevices > 0 || unencryptedDevices.length > 0
             ? 'Review and approve all devices. Enforce encryption on all mobile devices accessing company data.'
             : 'All mobile devices are approved and encrypted.',
@@ -958,7 +1142,7 @@ Start with Phase 0 now!
           content: [{ type: 'text', text: JSON.stringify({
             domain: domain,
             error: 'Unable to access mobile devices. Verify mobile device management API is enabled.',
-            cmmc_control: 'SC.L2-3.13.11'
+            compliance_mappings: COMPLIANCE_MAPPINGS.check_mobile_devices
           }, null, 2) }]
         };
       }
@@ -967,7 +1151,7 @@ Start with Phase 0 now!
     if (toolName === 'check_email_authentication') {
       const result = {
         domain: domain,
-        cmmc_control: 'SC.L2-3.13.8',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_email_authentication,
         status: 'Manual verification required',
         what_to_check: [
           'Verify SPF record exists in DNS',
@@ -975,7 +1159,7 @@ Start with Phase 0 now!
           'Verify DMARC policy is configured',
           'Check for proper alignment of SPF and DKIM'
         ],
-        why_important: 'Email authentication prevents spoofing and phishing attacks. Critical for defense contractors.',
+        why_important: 'Email authentication prevents spoofing and phishing attacks. Critical for organizations handling sensitive data.',
         recommendation: 'Ensure SPF, DKIM, and DMARC are all properly configured. Set DMARC policy to "quarantine" or "reject" for maximum protection.',
         dns_check_instructions: 'Use DNS lookup tools to verify: SPF TXT record, DKIM TXT record (google._domainkey), DMARC TXT record (_dmarc)',
         licensing_note: 'Email authentication is included in all Google Workspace editions.'
@@ -987,7 +1171,7 @@ Start with Phase 0 now!
     if (toolName === 'check_email_forwarding') {
       const result = {
         domain: domain,
-        cmmc_control: 'AC.L2-3.1.20',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_email_forwarding,
         status: 'Manual verification required',
         what_to_check: [
           'Google Admin Console > Apps > Google Workspace > Gmail',
@@ -995,7 +1179,7 @@ Start with Phase 0 now!
           'Check for forwarding rules',
           'Review per-user forwarding via Vault or admin reports'
         ],
-        security_concern: 'Email forwarding to external addresses can leak sensitive CUI data.',
+        security_concern: 'Email forwarding to external addresses can leak sensitive data (CUI/PHI).',
         recommendation: 'Disable automatic forwarding to external addresses. Implement approval workflow for any necessary forwarding.',
         licensing_note: 'Forwarding controls available in all editions.',
         licensing_impact: 'Gmail data loss prevention (DLP) to block forwarding of sensitive content requires Enterprise editions.'
@@ -1007,7 +1191,7 @@ Start with Phase 0 now!
     if (toolName === 'check_calendar_sharing') {
       const result = {
         domain: domain,
-        cmmc_control: 'AC.L2-3.1.20',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_calendar_sharing,
         status: 'Manual verification required',
         what_to_check: [
           'Google Admin Console > Apps > Google Workspace > Calendar',
@@ -1015,7 +1199,7 @@ Start with Phase 0 now!
           'Check if calendars can be shared outside organization',
           'Check default sharing settings for new calendars'
         ],
-        security_concern: 'Calendar information can reveal operational patterns, meeting schedules with government customers, and other sensitive information.',
+        security_concern: 'Calendar information can reveal operational patterns, meeting schedules, and other sensitive information.',
         recommendation: 'Restrict calendar sharing to internal only. Disable public calendar sharing.',
         licensing_note: 'Calendar sharing controls included in all editions.'
       };
@@ -1026,15 +1210,15 @@ Start with Phase 0 now!
     if (toolName === 'check_data_regions') {
       const result = {
         domain: domain,
-        cmmc_control: 'SC.L2-3.13.16',
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_data_regions,
         status: 'Manual verification required',
         what_to_check: [
           'Google Admin Console > Account > Account settings',
           'Data region settings',
           'Verify data is stored in approved regions'
         ],
-        itar_note: 'For ITAR-controlled data, data must remain in the United States. Google Workspace allows data region selection.',
-        recommendation: 'If handling ITAR or export-controlled data, ensure data region is set to United States only.',
+        note: 'For ITAR-controlled data or certain compliance requirements, data must remain in specific regions.',
+        recommendation: 'If handling ITAR, export-controlled data, or HIPAA data, ensure data region is appropriately configured.',
         licensing_note: 'Data region selection available in Enterprise Plus only.',
         licensing_impact: 'Enterprise Plus required (~$23/user/month) for data region controls.'
       };
@@ -1080,9 +1264,9 @@ Start with Phase 0 now!
           total_shared_drives: sharedDrives.length,
           drives_with_external_access: drivesWithExternal.length,
           external_access_details: drivesWithExternal,
-          cmmc_control: 'AC.L2-3.1.20',
+          compliance_mappings: COMPLIANCE_MAPPINGS.check_shared_drives,
           recommendation: drivesWithExternal.length > 0
-            ? 'Review shared drives with external access. Remove external users from drives containing CUI.'
+            ? 'Review shared drives with external access. Remove external users from drives containing sensitive data (CUI/PHI).'
             : 'No shared drives found with external access.',
           licensing_note: 'Shared drives available in Business Standard and above.'
         };
@@ -1093,7 +1277,7 @@ Start with Phase 0 now!
           content: [{ type: 'text', text: JSON.stringify({
             domain: domain,
             error: 'Unable to access shared drives. Verify Drive API scope is enabled.',
-            cmmc_control: 'AC.L2-3.1.20'
+            compliance_mappings: COMPLIANCE_MAPPINGS.check_shared_drives
           }, null, 2) }]
         };
       }
@@ -1165,10 +1349,32 @@ Start with Phase 0 now!
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }
 
+    // HIPAA-SPECIFIC CHECKS
+    if (toolName === 'check_baa_status') {
+      const result = {
+        domain: domain,
+        compliance_mappings: COMPLIANCE_MAPPINGS.check_baa_status,
+        status: 'Manual verification required',
+        what_to_check: [
+          'Google Admin Console > Account > Legal and compliance',
+          'Look for "Cloud Identity HIPAA Business Associate Amendment"',
+          'Verify BAA is signed and active'
+        ],
+        why_important: 'A Business Associate Agreement (BAA) is required when using cloud services to process Protected Health Information (PHI).',
+        requirement: 'HIPAA requires a BAA with any vendor that handles PHI on your behalf.',
+        recommendation: 'If handling PHI, ensure BAA is signed with Google. Google Workspace Enterprise editions support HIPAA compliance with signed BAA.',
+        licensing_note: 'HIPAA compliance requires Enterprise editions with signed BAA.',
+        licensing_impact: 'Enterprise Standard or Enterprise Plus required (~$18-23/user/month) for HIPAA-compliant deployment.'
+      };
+
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    }
+
     // REPORTING
     if (toolName === 'generate_comprehensive_report') {
       let findings = request.params.arguments.findings;
       const contextNotes = request.params.arguments.context_notes || '';
+      const activeFrameworks = request.params.arguments.active_frameworks || ['CMMC'];
 
       // Parse findings if it's a string
       if (typeof findings === 'string') {
@@ -1208,6 +1414,12 @@ Start with Phase 0 now!
       const systemProtectionFindings = [];
       const mspFindings = [];
 
+      // Framework-specific findings
+      const frameworkFindings = {};
+      for (const fw of activeFrameworks) {
+        frameworkFindings[fw] = [];
+      }
+
       // Risk scoring
       let criticalIssues = 0;
       let highIssues = 0;
@@ -1223,10 +1435,13 @@ Start with Phase 0 now!
             continue;
           }
 
-          const control = data.cmmc_control || 'Unknown';
+          // Get compliance mappings (new format) or fall back to cmmc_control (old format)
+          const mappings = data.compliance_mappings || COMPLIANCE_MAPPINGS[checkName] || {};
+          const cmmcControl = mappings.CMMC || data.cmmc_control || 'Unknown';
+
           const finding = {
             check: checkName,
-            control: control,
+            compliance_mappings: mappings,
             status: data.mfa_enforced === false || data.users_without_mfa > 0 ||
                     data.inactive_accounts > 0 || data.groups_with_external_members > 0 ||
                     data.drives_with_external_access > 0 || data.unencrypted_devices > 0 ||
@@ -1235,11 +1450,21 @@ Start with Phase 0 now!
             data: data
           };
 
-          // Categorize by control family
-          if (control.startsWith('AC.')) accessControlFindings.push(finding);
-          else if (control.startsWith('IA.')) authenticationFindings.push(finding);
-          else if (control.startsWith('AU.')) auditFindings.push(finding);
-          else if (control.startsWith('SC.')) systemProtectionFindings.push(finding);
+          // Categorize by CMMC control family for backwards compatibility
+          if (cmmcControl.startsWith('AC.')) accessControlFindings.push(finding);
+          else if (cmmcControl.startsWith('IA.')) authenticationFindings.push(finding);
+          else if (cmmcControl.startsWith('AU.')) auditFindings.push(finding);
+          else if (cmmcControl.startsWith('SC.')) systemProtectionFindings.push(finding);
+
+          // Add to framework-specific findings
+          for (const fw of activeFrameworks) {
+            if (mappings[fw]) {
+              frameworkFindings[fw].push({
+                ...finding,
+                control_code: mappings[fw]
+              });
+            }
+          }
 
           // Track MSP findings
           if (data.msp_recommendation || data.msp_value || data.potential_savings) {
@@ -1273,12 +1498,27 @@ Start with Phase 0 now!
       const totalIssues = criticalIssues + highIssues + mediumIssues;
       const passedChecks = Object.keys(findings).length - totalIssues;
 
+      // Build framework scores
+      const frameworkScores = {};
+      for (const fw of activeFrameworks) {
+        const fwFindings = frameworkFindings[fw];
+        const fwPassed = fwFindings.filter(f => f.status === 'PASS').length;
+        const fwTotal = fwFindings.length;
+        frameworkScores[fw] = {
+          total_controls: fwTotal,
+          passed: fwPassed,
+          failed: fwTotal - fwPassed,
+          score: fwTotal > 0 ? `${Math.round((fwPassed / fwTotal) * 100)}%` : 'N/A'
+        };
+      }
+
       // Generate report
       const report = {
         report_metadata: {
           domain: domain,
           generated_at: new Date().toISOString(),
-          audit_scope: 'CMMC Level 2 - Google Workspace',
+          audit_scope: 'Multi-Framework Compliance - Google Workspace',
+          frameworks_assessed: activeFrameworks,
           total_checks: Object.keys(findings).length,
           passed: passedChecks,
           failed: totalIssues
@@ -1288,13 +1528,15 @@ Start with Phase 0 now!
           critical_issues: criticalIssues,
           high_priority_issues: highIssues,
           medium_priority_issues: mediumIssues,
-          compliance_score: `${Math.round((passedChecks / Object.keys(findings).length) * 100)}%`,
+          overall_compliance_score: `${Math.round((passedChecks / Object.keys(findings).length) * 100)}%`,
+          framework_scores: frameworkScores,
           key_findings: [
             criticalIssues > 0 ? `${criticalIssues} critical security issues require immediate attention` : null,
             highIssues > 0 ? `${highIssues} high-priority issues identified` : null,
             mspFindings.length > 0 ? `${mspFindings.length} opportunities for cost optimization identified` : null
           ].filter(Boolean)
         },
+        findings_by_framework: frameworkFindings,
         findings_by_control_area: {
           access_control: {
             control_family: 'AC - Access Control',
@@ -1328,7 +1570,7 @@ Start with Phase 0 now!
         priority_recommendations: [
           criticalIssues > 0 ? 'CRITICAL: Address 2FA and admin access issues immediately' : null,
           highIssues > 0 ? 'HIGH: Review external sharing and inactive accounts' : null,
-          licensingImpacts.length > 0 ? 'LICENSING: Enterprise features required for full CMMC compliance' : null
+          licensingImpacts.length > 0 ? 'LICENSING: Enterprise features may be required for full compliance' : null
         ].filter(Boolean),
         msp_value_summary: {
           total_opportunities: mspFindings.length,

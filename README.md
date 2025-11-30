@@ -1,6 +1,19 @@
-# Google Workspace CMMC Compliance Audit Tool
+# Google Workspace Compliance Audit Tool
 
-An automated security audit tool for Google Workspace environments, specifically designed to assess compliance with CMMC (Cybersecurity Maturity Model Certification) Level 2 requirements. Built using Claude's Model Context Protocol (MCP) for AI-powered analysis with interactive Q&A workflows.
+An automated security audit tool for Google Workspace environments, designed to assess compliance with multiple regulatory frameworks. Built using Claude's Model Context Protocol (MCP) for AI-powered analysis with interactive Q&A workflows.
+
+## Supported Compliance Frameworks
+
+| Framework | Description |
+|-----------|-------------|
+| **CMMC** | Cybersecurity Maturity Model Certification (Level 2) |
+| **NIST 800-171** | Protecting Controlled Unclassified Information |
+| **NIST CSF** | Cybersecurity Framework |
+| **ISO 27001** | Information Security Management Systems |
+| **HIPAA** | Health Insurance Portability and Accountability Act |
+| **FTC Safeguards** | FTC Safeguards Rule for financial institutions |
+
+Select one or more frameworks when starting an audit to get tailored compliance mappings and recommendations.
 
 ---
 
@@ -16,7 +29,7 @@ This tool uses **Claude AI** (via Claude Desktop) to analyze your Google Workspa
 ### 🔒 Read-Only Access
 This tool operates in **read-only mode**. It will:
 - ✅ **READ** user lists, groups, security settings, and audit logs
-- ✅ **ANALYZE** configurations against CMMC requirements
+- ✅ **ANALYZE** configurations against selected compliance frameworks
 - ❌ **NEVER** modify, delete, or change any settings in your Google Workspace
 
 The Google API scopes requested are all read-only (`*.readonly`). This tool cannot make changes to your environment.
@@ -56,21 +69,22 @@ node --version
 
 **This tool is for internal security assessment and compliance gap identification only.**
 
-- ❌ **NOT an official CMMC compliance certification**
-- ❌ **NOT a substitute for C3PAO (CMMC Third-Party Assessment Organization) assessment**
-- ❌ **NOT a guarantee of CMMC compliance**
+- ❌ **NOT an official compliance certification** for any framework
+- ❌ **NOT a substitute for professional auditors** or assessors
+- ❌ **NOT a guarantee of compliance** with any regulatory framework
 
 ✅ **What this tool IS:**
 - A self-assessment tool to identify potential compliance gaps
 - A starting point for compliance preparation
-- A way to understand your current security posture
+- A way to understand your current security posture across multiple frameworks
 
-**For official CMMC certification, you MUST work with:**
-- A certified C3PAO (CMMC Third-Party Assessment Organization)
-- Registered Practitioner (RP) or Registered Practitioner Organization (RPO)
-- Official CMMC Assessment Body authorized by the Cyber Accreditation Body (Cyber-AB)
+**For official certification, work with appropriate professionals:**
+- **CMMC**: Certified C3PAO or Registered Practitioner (RP)
+- **HIPAA**: Healthcare compliance specialists
+- **ISO 27001**: Accredited certification bodies
+- **FTC Safeguards**: Qualified Information Security Officer (QISO)
 
-This tool provides automated assessment capabilities but does not replace professional compliance assessment and certification. Official CMMC Level 2 certification requires formal assessment by authorized organizations.
+This tool provides automated assessment capabilities but does not replace professional compliance assessment and certification.
 
 ---
 
@@ -79,11 +93,12 @@ This tool provides automated assessment capabilities but does not replace profes
 ### Already Installed?
 
 1. **Open Claude Desktop**
-2. **Type:** `Start a CMMC audit for yourdomain.com`
-3. **Answer** the business context questions (what does your business do, how many employees)
-4. **Claude will run 18 checks** across 5 phases with Q&A after each
-5. **Provide screenshots** when asked for manual verification items
-6. **Get your comprehensive report** with compliance score and recommendations
+2. **Type:** `Start a compliance audit for yourdomain.com`
+3. **Select frameworks** when prompted (CMMC, HIPAA, NIST 800-171, etc.)
+4. **Answer** the business context questions
+5. **Claude will run 19 checks** across 5 phases with Q&A after each
+6. **Provide screenshots** when asked for manual verification items
+7. **Get your comprehensive report** with compliance scores per framework
 
 **Important:** Say "Start" not "Run" - this triggers the guided workflow!
 
@@ -251,7 +266,7 @@ The installer will:
 
 **After installation completes:**
 1. Restart Claude Desktop (Cmd+Q, then reopen)
-2. Type: `Start a CMMC audit for yourdomain.com`
+2. Type: `Start a compliance audit for yourdomain.com`
 
 ---
 
@@ -675,10 +690,11 @@ Check license utilization for yourdomain.com
 ### Example Workflow
 
 ```
-User: "Start a CMMC audit for valleytechpartners.com"
+User: "Start a compliance audit for valleytechpartners.com with CMMC and HIPAA"
 
 Claude:
-"I'll conduct a comprehensive CMMC Level 2 audit of valleytechpartners.com.
+"I'll conduct a comprehensive compliance audit of valleytechpartners.com
+for the selected frameworks: CMMC, HIPAA.
 
 PHASE 0: BUSINESS CONTEXT
 
