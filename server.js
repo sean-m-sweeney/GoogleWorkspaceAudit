@@ -69,6 +69,54 @@ function getDriveClient(scopes) {
   return google.drive({ version: 'v3', auth });
 }
 
+// Helper: Sleep for rate limiting
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Helper: Fetch all users with pagination
+async function fetchAllUsers(admin) {
+  const allUsers = [];
+  let pageToken = undefined;
+
+  do {
+    const response = await admin.users.list({
+      customer: 'my_customer',
+      maxResults: 500,
+      pageToken: pageToken
+    });
+
+    if (response.data.users) {
+      allUsers.push(...response.data.users);
+    }
+
+    pageToken = response.data.nextPageToken;
+  } while (pageToken);
+
+  return allUsers;
+}
+
+// Helper: Fetch all shared drives with pagination
+async function fetchAllSharedDrives(drive) {
+  const allDrives = [];
+  let pageToken = undefined;
+
+  do {
+    const response = await drive.drives.list({
+      pageSize: 100,
+      pageToken: pageToken
+    });
+
+    if (response.data.drives) {
+      allDrives.push(...response.data.drives);
+    }
+
+    pageToken = response.data.nextPageToken;
+  } while (pageToken);
+
+  return allDrives;
+}
+
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
@@ -560,13 +608,13 @@ Start with Phase 0 now!
     // ACCESS CONTROL CHECKS
     if (toolName === 'check_2fa_status') {
       const admin = getAdminClient(['https://www.googleapis.com/auth/admin.directory.user.readonly']);
-      const users = await admin.users.list({ customer: 'my_customer', maxResults: 500 });
+      const users = await fetchAllUsers(admin);
 
       let usersWithout2FA = 0;
       let totalUsers = 0;
       let adminWithout2FA = 0;
 
-      for (const user of users.data.users || []) {
+      for (const user of users) {
         totalUsers++;
         if (!user.isEnrolledIn2Sv) {
           usersWithout2FA++;
@@ -596,8 +644,8 @@ Start with Phase 0 now!
         'https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly'
       ]);
 
-      const users = await admin.users.list({ customer: 'my_customer', maxResults: 500 });
-      const adminUsers = users.data.users?.filter(u => u.isAdmin) || [];
+      const users = await fetchAllUsers(admin);
+      const adminUsers = users.filter(u => u.isAdmin) || [];
 
       const result = {
         domain: domain,
@@ -642,6 +690,8 @@ Start with Phase 0 now!
               external_members: externalMembers.map(m => m.email)
             });
           }
+          // Rate limit to avoid 429 errors
+          await sleep(100);
         } catch (error) {
           // Skip groups we can't access
         }
@@ -747,13 +797,13 @@ Start with Phase 0 now!
 
     if (toolName === 'check_inactive_accounts') {
       const admin = getAdminClient(['https://www.googleapis.com/auth/admin.directory.user.readonly']);
-      const users = await admin.users.list({ customer: 'my_customer', maxResults: 500 });
+      const users = await fetchAllUsers(admin);
 
       const ninetyDaysAgo = new Date();
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
       const inactiveAccounts = [];
-      for (const user of users.data.users || []) {
+      for (const user of users) {
         if (user.lastLoginTime) {
           const lastLogin = new Date(user.lastLoginTime);
           if (lastLogin < ninetyDaysAgo && !user.suspended) {
@@ -779,7 +829,7 @@ Start with Phase 0 now!
 
       const result = {
         domain: domain,
-        total_users: users.data.users?.length || 0,
+        total_users: users.length,
         inactive_accounts: inactiveAccounts.length,
         inactive_account_details: inactiveAccounts,
         cmmc_control: 'AC.L2-3.1.1',
@@ -997,10 +1047,10 @@ Start with Phase 0 now!
       try {
         const drive = getDriveClient(['https://www.googleapis.com/auth/drive.readonly']);
 
-        const sharedDrives = await drive.drives.list({ pageSize: 100 });
+        const sharedDrives = await fetchAllSharedDrives(drive);
         const drivesWithExternal = [];
 
-        for (const drv of sharedDrives.data.drives || []) {
+        for (const drv of sharedDrives) {
           try {
             const permissions = await drive.permissions.list({
               fileId: drv.id,
@@ -1027,7 +1077,7 @@ Start with Phase 0 now!
 
         const result = {
           domain: domain,
-          total_shared_drives: sharedDrives.data.drives?.length || 0,
+          total_shared_drives: sharedDrives.length,
           drives_with_external_access: drivesWithExternal.length,
           external_access_details: drivesWithExternal,
           cmmc_control: 'AC.L2-3.1.20',
@@ -1051,28 +1101,28 @@ Start with Phase 0 now!
 
     if (toolName === 'check_license_utilization') {
       const admin = getAdminClient(['https://www.googleapis.com/auth/admin.directory.user.readonly']);
-      const users = await admin.users.list({ customer: 'my_customer', maxResults: 500 });
+      const users = await fetchAllUsers(admin);
 
-      const activeUsers = users.data.users?.filter(u => !u.suspended).length || 0;
-      const suspendedUsers = users.data.users?.filter(u => u.suspended).length || 0;
+      const activeUsers = users.filter(u => !u.suspended).length;
+      const suspendedUsers = users.filter(u => u.suspended).length;
 
       // Calculate inactive users (not logged in for 90+ days)
       const ninetyDaysAgo = new Date();
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-      const inactiveButLicensed = users.data.users?.filter(u => {
+      const inactiveButLicensed = users.filter(u => {
         if (u.suspended) return false;
         if (!u.lastLoginTime) return true;
         const lastLogin = new Date(u.lastLoginTime);
         return lastLogin < ninetyDaysAgo;
-      }).length || 0;
+      }).length;
 
       const estimatedMonthlyCost = activeUsers * 12; // Assuming ~$12/user/month average
       const wastedLicenseCost = inactiveButLicensed * 12;
 
       const result = {
         domain: domain,
-        total_users: users.data.users?.length || 0,
+        total_users: users.length,
         active_users: activeUsers,
         suspended_users: suspendedUsers,
         inactive_but_licensed: inactiveButLicensed,
@@ -1089,14 +1139,14 @@ Start with Phase 0 now!
 
     if (toolName === 'check_storage_usage') {
       const admin = getAdminClient(['https://www.googleapis.com/auth/admin.directory.user.readonly']);
-      const users = await admin.users.list({ customer: 'my_customer', maxResults: 500 });
+      const users = await fetchAllUsers(admin);
 
-      const storageUsers = users.data.users?.map(u => ({
+      const storageUsers = users.map(u => ({
         email: u.primaryEmail,
         name: u.name?.fullName,
         storage_used_bytes: u.quotaBytesUsed ? parseInt(u.quotaBytesUsed) : 0,
         storage_used_gb: u.quotaBytesUsed ? (parseInt(u.quotaBytesUsed) / (1024**3)).toFixed(2) : '0.00'
-      })).sort((a, b) => b.storage_used_bytes - a.storage_used_bytes) || [];
+      })).sort((a, b) => b.storage_used_bytes - a.storage_used_bytes);
 
       const totalStorageBytes = storageUsers.reduce((sum, u) => sum + u.storage_used_bytes, 0);
       const totalStorageGB = (totalStorageBytes / (1024**3)).toFixed(2);
@@ -1104,9 +1154,9 @@ Start with Phase 0 now!
 
       const result = {
         domain: domain,
-        total_users: users.data.users?.length || 0,
+        total_users: users.length,
         total_storage_used_gb: totalStorageGB,
-        average_per_user_gb: (totalStorageBytes / users.data.users?.length / (1024**3)).toFixed(2),
+        average_per_user_gb: users.length > 0 ? (totalStorageBytes / users.length / (1024**3)).toFixed(2) : '0.00',
         top_storage_consumers: topUsers,
         msp_recommendation: 'Monitor storage growth. Consider archival policies for users approaching quota limits.',
         licensing_note: 'Storage quotas vary by edition: Business Starter (30GB/user), Business Standard (2TB/user), Business Plus/Enterprise (5TB+ pooled).'
@@ -1164,48 +1214,59 @@ Start with Phase 0 now!
       let mediumIssues = 0;
       let licensingImpacts = [];
 
-      // Process findings
+      // Process findings with defensive checks
       for (const [checkName, data] of Object.entries(findings)) {
-        const control = data.cmmc_control || 'Unknown';
-        const finding = {
-          check: checkName,
-          control: control,
-          status: data.mfa_enforced === false || data.users_without_mfa > 0 ||
-                  data.inactive_accounts > 0 || data.groups_with_external_members > 0 ||
-                  data.drives_with_external_access > 0 || data.unencrypted_devices > 0 ||
-                  data.suspicious_events_found > 0 ? 'FAIL' : 'PASS',
-          recommendation: data.recommendation,
-          data: data
-        };
+        try {
+          // Skip if data is null/undefined or not an object
+          if (!data || typeof data !== 'object') {
+            console.error(`Warning: Skipping invalid finding for ${checkName}`);
+            continue;
+          }
 
-        // Categorize by control family
-        if (control.startsWith('AC.')) accessControlFindings.push(finding);
-        else if (control.startsWith('IA.')) authenticationFindings.push(finding);
-        else if (control.startsWith('AU.')) auditFindings.push(finding);
-        else if (control.startsWith('SC.')) systemProtectionFindings.push(finding);
-
-        // Track MSP findings
-        if (data.msp_recommendation || data.msp_value || data.potential_savings) {
-          mspFindings.push({
+          const control = data.cmmc_control || 'Unknown';
+          const finding = {
             check: checkName,
-            value: data.msp_recommendation || data.msp_value,
-            savings: data.potential_savings
-          });
-        }
+            control: control,
+            status: data.mfa_enforced === false || data.users_without_mfa > 0 ||
+                    data.inactive_accounts > 0 || data.groups_with_external_members > 0 ||
+                    data.drives_with_external_access > 0 || data.unencrypted_devices > 0 ||
+                    data.suspicious_events_found > 0 ? 'FAIL' : 'PASS',
+            recommendation: data.recommendation || 'No recommendation available',
+            data: data
+          };
 
-        // Risk scoring
-        if (finding.status === 'FAIL') {
-          if (checkName.includes('2fa') || checkName.includes('admin')) criticalIssues++;
-          else if (checkName.includes('inactive') || checkName.includes('external')) highIssues++;
-          else mediumIssues++;
-        }
+          // Categorize by control family
+          if (control.startsWith('AC.')) accessControlFindings.push(finding);
+          else if (control.startsWith('IA.')) authenticationFindings.push(finding);
+          else if (control.startsWith('AU.')) auditFindings.push(finding);
+          else if (control.startsWith('SC.')) systemProtectionFindings.push(finding);
 
-        // Track licensing impacts
-        if (data.licensing_impact) {
-          licensingImpacts.push({
-            check: checkName,
-            impact: data.licensing_impact
-          });
+          // Track MSP findings
+          if (data.msp_recommendation || data.msp_value || data.potential_savings) {
+            mspFindings.push({
+              check: checkName,
+              value: data.msp_recommendation || data.msp_value || '',
+              savings: data.potential_savings || ''
+            });
+          }
+
+          // Risk scoring
+          if (finding.status === 'FAIL') {
+            if (checkName.includes('2fa') || checkName.includes('admin')) criticalIssues++;
+            else if (checkName.includes('inactive') || checkName.includes('external')) highIssues++;
+            else mediumIssues++;
+          }
+
+          // Track licensing impacts
+          if (data.licensing_impact) {
+            licensingImpacts.push({
+              check: checkName,
+              impact: data.licensing_impact
+            });
+          }
+        } catch (err) {
+          // Log but continue processing other findings
+          console.error(`Warning: Error processing finding for ${checkName}: ${err.message}`);
         }
       }
 
