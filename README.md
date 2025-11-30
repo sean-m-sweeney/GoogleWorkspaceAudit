@@ -4,6 +4,25 @@ An automated security audit tool for Google Workspace environments, specifically
 
 ---
 
+## Important: AI Usage & Data Access
+
+### 🤖 AI-Powered Tool
+This tool uses **Claude AI** (via Claude Desktop) to analyze your Google Workspace configuration. Before using this tool:
+
+- **Get leadership approval** for using AI in your compliance assessment workflow
+- Understand that configuration data from your Google Workspace will be processed by Claude
+- Review your organization's AI usage policies to ensure this aligns with your guidelines
+
+### 🔒 Read-Only Access
+This tool operates in **read-only mode**. It will:
+- ✅ **READ** user lists, groups, security settings, and audit logs
+- ✅ **ANALYZE** configurations against CMMC requirements
+- ❌ **NEVER** modify, delete, or change any settings in your Google Workspace
+
+The Google API scopes requested are all read-only (`*.readonly`). This tool cannot make changes to your environment.
+
+---
+
 ## Prerequisites & Platform Requirements
 
 ### ⚙️ System Requirements
