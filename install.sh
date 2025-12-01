@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Google Workspace Compliance Audit Tool - One-Line Installer
-# Usage: curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/dev/install.sh | bash
-# NOTE: Change 'dev' to 'main' for production use after testing
+# Usage: curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/install.sh | bash
 
 set -e
 
@@ -123,8 +122,7 @@ if [ -f "../installer/install.sh" ]; then
     chmod +x uninstall.sh
 else
     echo "Downloading latest version from GitHub..."
-    # Download from dev branch for testing (change to 'main' for production)
-    BRANCH="dev"
+    BRANCH="main"
     curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/${BRANCH}/server.js -o server.js
     curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/${BRANCH}/uninstall.sh -o uninstall.sh
     curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/${BRANCH}/README.md -o README.md
