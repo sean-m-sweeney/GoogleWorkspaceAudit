@@ -271,7 +271,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       // WORKFLOW ORCHESTRATION
       {
         name: 'start_compliance_audit',
-        description: 'Start a comprehensive Google Workspace compliance audit with guided interactive workflow. Use this when user says "start a Google Workspace audit" or "start a compliance audit". User must select which compliance frameworks to assess against. Supported frameworks: CMMC, NIST 800-171, NIST CSF, ISO 27001, HIPAA, FTC Safeguards Rule.',
+        description: 'Start a comprehensive Google Workspace compliance audit. IMPORTANT: Before calling this tool, you MUST first ask the user which compliance framework(s) they want to assess against. Present these options: CMMC (defense contractors), NIST 800-171 (government contractors), NIST CSF (general cybersecurity), ISO 27001 (international standard), HIPAA (healthcare), FTC Safeguards Rule (financial services). Do NOT call this tool until the user has selected their framework(s).',
         inputSchema: {
           type: 'object',
           properties: {
@@ -282,7 +282,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 type: 'string',
                 enum: ['CMMC', 'NIST_800_171', 'NIST_CSF', 'ISO_27001', 'HIPAA', 'FTC']
               },
-              description: 'Compliance frameworks to assess against. Select one or more: CMMC, NIST_800_171, NIST_CSF, ISO_27001, HIPAA, FTC'
+              description: 'REQUIRED: Compliance frameworks selected by user. Must ask user first. Options: CMMC, NIST_800_171, NIST_CSF, ISO_27001, HIPAA, FTC'
             }
           },
           required: ['domain', 'frameworks']
@@ -542,7 +542,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     // WORKFLOW ORCHESTRATION
     if (toolName === 'start_compliance_audit') {
-      const frameworks = request.params.arguments.frameworks || ['CMMC'];
+      const frameworks = request.params.arguments.frameworks;
+      if (!frameworks || frameworks.length === 0) {
+        return {
+          content: [{
+            type: 'text',
+            text: 'ERROR: No compliance frameworks selected. Please ask the user which framework(s) they want to assess against:\n\n- CMMC (defense contractors)\n- NIST 800-171 (government contractors)\n- NIST CSF (general cybersecurity)\n- ISO 27001 (international standard)\n- HIPAA (healthcare)\n- FTC Safeguards Rule (financial services)\n\nThen call this tool again with the selected frameworks.'
+          }]
+        };
+      }
       const frameworkList = frameworks.join(', ');
       const includesHIPAA = frameworks.includes('HIPAA');
 
