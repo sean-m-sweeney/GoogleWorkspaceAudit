@@ -116,29 +116,31 @@ The installer walks you through **everything** - Google Cloud setup, credentials
 
 ## Overview
 
-This tool provides **18 automated checks** across **5 CMMC control areas** with comprehensive reporting:
-- **Access Control (AC)** - 6 checks
-- **Identification and Authentication (IA)** - 2 checks
-- **Audit and Accountability (AU)** - 2 checks
-- **System and Communications Protection (SC)** - 5 checks
-- **MSP Operations** - 3 checks for cost optimization
+This tool provides **19 automated checks** across **5 control areas** with comprehensive reporting mapped to multiple compliance frameworks:
+- **Access Control** - 6 checks
+- **Identification and Authentication** - 2 checks
+- **Audit and Accountability** - 2 checks
+- **System and Communications Protection** - 5 checks
+- **MSP Operations** - 4 checks for cost optimization
 
 ### Key Features
-- 18 comprehensive CMMC audit checks (automated + manual verification guides)
+- 19 comprehensive audit checks (automated + manual verification guides)
+- **Multi-framework compliance mapping** (CMMC, NIST 800-171, NIST CSF, ISO 27001, HIPAA, FTC Safeguards)
 - Interactive Q&A workflow for gathering organizational context
-- Comprehensive report generation with risk scoring
+- Comprehensive report generation with per-framework scoring
 - MSP value identification (cost savings, license optimization)
-- CMMC control mapping for each audit check
 - Licensing impact assessment (identifies when compliance requires Enterprise editions)
 - Conversational interface via Claude Desktop
 - Read-only access (audit only, no modifications)
 
 ## Current Capabilities
 
-### Implemented Audit Checks (18 Total)
+### Implemented Audit Checks (19 Total)
+
+Each check maps to controls in all supported frameworks. Example control mappings shown for reference.
 
 #### Access Control (6 checks)
-1. **2FA/MFA Status** (CMMC IA.L2-3.5.3)
+1. **2FA/MFA Status** (e.g., CMMC IA.L2-3.5.3, HIPAA 164.312(d))
    - Checks enforcement across all users
    - Identifies admin accounts without 2FA
    - Licensing: Included in all editions
@@ -256,7 +258,7 @@ curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/
 
 The installer will:
 - ✓ Check prerequisites (macOS, Node.js 18+, Claude Desktop)
-- ✓ Set up project directory at `~/workspace-cmmc-audit`
+- ✓ Set up project directory at `~/workspace-compliance-audit`
 - ✓ Install dependencies automatically
 - ✓ Guide you through Google Cloud setup step-by-step
 - ✓ Configure credentials
@@ -358,7 +360,7 @@ Before creating a service account, you may need to disable an organization polic
 
 **A. Create Service Account:**
 1. Go to https://console.cloud.google.com
-2. Create a new project (name it "CMMC Audit" or similar)
+2. Create a new project (name it "Workspace Audit" or similar)
 3. Click the hamburger menu (☰) → **APIs & Services** → **Enable APIs and Services**
 4. Search for "Admin SDK API" → Click it → Click **Enable**
 5. Go back to hamburger menu → **APIs & Services** → **Credentials**
@@ -373,8 +375,8 @@ Before creating a service account, you may need to disable an organization polic
 4. A file downloads - **rename it to `credentials.json`**
 5. Move it to your project folder:
 ```bash
-mv ~/Downloads/your-project-12345-abc.json ~/workspace-cmmc-audit/credentials.json
-chmod 600 ~/workspace-cmmc-audit/credentials.json
+mv ~/Downloads/your-project-12345-abc.json ~/workspace-compliance-audit/credentials.json
+chmod 600 ~/workspace-compliance-audit/credentials.json
 ```
 
 **C. Setup Domain-Wide Delegation:**
@@ -391,7 +393,7 @@ https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.google
 8. Click **Authorize**
 
 ### Step 5: Get the Server Code
-Download `server.js` from this repository and put it in `~/workspace-cmmc-audit/`
+Download `server.js` from this repository and put it in `~/workspace-compliance-audit/`
 
 **IMPORTANT:** Open `server.js` and find this line (around line 31):
 ```javascript
@@ -420,8 +422,8 @@ nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
   "mcpServers": {
     "workspace-audit": {
       "command": "/usr/local/bin/node",
-      "args": ["/Users/YOUR_USERNAME/workspace-cmmc-audit/server.js"],
-      "cwd": "/Users/YOUR_USERNAME/workspace-cmmc-audit"
+      "args": ["/Users/YOUR_USERNAME/workspace-compliance-audit/server.js"],
+      "cwd": "/Users/YOUR_USERNAME/workspace-compliance-audit"
     }
   }
 }
@@ -433,11 +435,11 @@ nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
 ### Step 7: Test It
 ```bash
-cd ~/workspace-cmmc-audit
+cd ~/workspace-compliance-audit
 node server.js
 ```
 
-You should see: `Workspace CMMC Audit MCP server running on stdio`
+You should see: `Workspace Compliance Audit MCP server running on stdio`
 
 Press `Ctrl+C` to stop.
 
@@ -450,10 +452,10 @@ Press `Ctrl+C` to stop.
 
 In Claude Desktop, type:
 ```
-Run a CMMC audit on yourdomain.com
+Start a Google Workspace audit for yourdomain.com
 ```
 
-Claude will ask you about your business, then run the full audit!
+Claude will ask which frameworks you want to assess against, then ask about your business context, and run the full audit!
 
 ---
 
@@ -513,7 +515,7 @@ Notice the `.readonly` suffix - this guarantees no modification capabilities.
 
 Run the uninstall script:
 ```bash
-cd ~/workspace-cmmc-audit  # or wherever you installed it
+cd ~/workspace-compliance-audit  # or wherever you installed it
 chmod +x uninstall.sh
 ./uninstall.sh
 ```
@@ -553,11 +555,11 @@ Only do this if you're permanently decommissioning the tool:
 **Step 3: Remove Project Files (Optional)**
 ```bash
 # This deletes everything including credentials
-rm -rf ~/workspace-cmmc-audit
+rm -rf ~/workspace-compliance-audit
 
 # Or if you want to keep credentials for later:
-rm ~/workspace-cmmc-audit/node_modules -rf
-rm ~/workspace-cmmc-audit/server.js
+rm ~/workspace-compliance-audit/node_modules -rf
+rm ~/workspace-compliance-audit/server.js
 # Keep credentials.json for reinstallation later
 ```
 
@@ -574,7 +576,7 @@ rm ~/workspace-cmmc-audit/server.js
 **Fixes:**
 1. **Verify credentials.json exists** in your project directory
    ```bash
-   ls -la ~/workspace-cmmc-audit/credentials.json
+   ls -la ~/workspace-compliance-audit/credentials.json
    # Should show a file with 600 permissions
    ```
 
@@ -590,7 +592,7 @@ rm ~/workspace-cmmc-audit/server.js
 
 4. **Check the credentials file format:**
    ```bash
-   cat ~/workspace-cmmc-audit/credentials.json | grep type
+   cat ~/workspace-compliance-audit/credentials.json | grep type
    # Should show: "type": "service_account"
    ```
 
@@ -632,9 +634,9 @@ rm ~/workspace-cmmc-audit/server.js
 
 **Fixes:**
 - Check that your username in the config file is correct
-- Make sure the path `/Users/YOUR_USERNAME/workspace-cmmc-audit/server.js` exists
+- Make sure the path `/Users/YOUR_USERNAME/workspace-compliance-audit/server.js` exists
 - Try using the full path to node: `which node` to find it
-- Verify server.js is executable: `ls -la ~/workspace-cmmc-audit/server.js`
+- Verify server.js is executable: `ls -la ~/workspace-compliance-audit/server.js`
 
 ### "Authentication failed" error
 
@@ -666,14 +668,15 @@ rm ~/workspace-cmmc-audit/server.js
 The recommended way to use this tool is through the interactive audit workflow:
 
 ```
-User: "Run a CMMC audit on valleytechpartners.com"
+User: "Start a Google Workspace audit for valleytechpartners.com"
 ```
 
 Claude will:
-1. Run all 18 audit checks organized into 5 phases
-2. Present findings after each phase
-3. Ask clarifying questions to gather organizational context
-4. Generate a comprehensive report with all findings and context
+1. Ask which compliance frameworks you want to assess against
+2. Run all 19 audit checks organized into 5 phases
+3. Present findings after each phase with framework-specific control mappings
+4. Ask clarifying questions to gather organizational context
+5. Generate a comprehensive report with per-framework scoring
 
 See **WORKFLOW.md** for detailed guidance on the interactive audit process.
 
@@ -806,12 +809,12 @@ Would you like me to:
 
 ## Project Structure
 ```
-workspace-cmmc-audit/
-├── server.js              # MCP server implementation (18 checks + report generator)
+workspace-compliance-audit/
+├── server.js              # MCP server implementation (19 checks + report generator)
 ├── credentials.json       # Google service account credentials (gitignored)
-├── WORKFLOW.md           # Interactive audit workflow guide for Claude
 ├── README.md             # This file (setup and usage)
 ├── package.json          # Node.js dependencies
+├── uninstall.sh          # Uninstaller script
 └── .gitignore           # Prevents credential exposure
 ```
 

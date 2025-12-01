@@ -1620,7 +1620,7 @@ Start with Phase 0 now!
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Workspace CMMC Audit MCP server running on stdio');
+  console.error('Workspace Compliance Audit MCP server running on stdio');
 }
 
 main().catch((error) => {

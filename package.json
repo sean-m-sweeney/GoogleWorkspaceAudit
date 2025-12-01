@@ -1,8 +1,8 @@
 {
-  "name": "workspace-cmmc-audit",
+  "name": "workspace-compliance-audit",
   "version": "1.0.0",
   "type": "module",
-  "description": "Google Workspace CMMC Level 2 Compliance Audit Tool",
+  "description": "Google Workspace Compliance Audit Tool - Multi-Framework Support",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

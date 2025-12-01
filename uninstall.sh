@@ -2,7 +2,7 @@
 
 echo ""
 echo "═══════════════════════════════════════════════════════════"
-echo "   Google Workspace CMMC Audit Tool - Uninstaller"
+echo "   Google Workspace Compliance Audit Tool - Uninstaller"
 echo "═══════════════════════════════════════════════════════════"
 echo ""
 
@@ -16,7 +16,7 @@ else
     CLAUDE_CONFIG=""
 fi
 
-echo "This script will help you uninstall the CMMC Audit Tool."
+echo "This script will help you uninstall the Compliance Audit Tool."
 echo ""
 
 # Step 1: Remove Claude Desktop Configuration
@@ -174,5 +174,5 @@ echo "To reinstall in the future:"
 echo "  • If you kept credentials.json, just run the installer again"
 echo "  • If you deleted everything, you'll need to set up a new service account"
 echo ""
-echo "Thank you for using the CMMC Audit Tool!"
+echo "Thank you for using the Google Workspace Compliance Audit Tool!"
 echo ""

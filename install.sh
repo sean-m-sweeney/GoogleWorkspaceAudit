@@ -81,7 +81,7 @@ echo "   STEP 2: Setting Up Project Directory"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
 
-INSTALL_DIR="$HOME/workspace-cmmc-audit"
+INSTALL_DIR="$HOME/workspace-compliance-audit"
 echo "Installing to: $INSTALL_DIR"
 echo ""
 
@@ -136,7 +136,7 @@ if [ ! -f "package.json" ]; then
     echo "✗ package.json not found - creating it..."
     cat > package.json << 'PACKAGE_EOF'
 {
-  "name": "workspace-cmmc-audit",
+  "name": "workspace-compliance-audit",
   "version": "1.0.0",
   "type": "module",
   "description": "Google Workspace Compliance Audit Tool - Multi-Framework Support",
