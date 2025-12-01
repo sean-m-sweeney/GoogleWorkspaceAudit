@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Google Workspace CMMC Audit Tool - One-Line Installer
+# Google Workspace Compliance Audit Tool - One-Line Installer
 # Usage: curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/install.sh | bash
 
 set -e
 
 echo ""
 echo "═══════════════════════════════════════════════════════════"
-echo "   Google Workspace CMMC Audit Tool - Installer"
+echo "   Google Workspace Compliance Audit Tool - Installer"
 echo "═══════════════════════════════════════════════════════════"
 echo ""
 
@@ -139,7 +139,7 @@ if [ ! -f "package.json" ]; then
   "name": "workspace-cmmc-audit",
   "version": "1.0.0",
   "type": "module",
-  "description": "Google Workspace CMMC Level 2 Compliance Audit Tool",
+  "description": "Google Workspace Compliance Audit Tool - Multi-Framework Support",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -496,7 +496,7 @@ echo ""
 # Test server (timeout after 2 seconds)
 timeout 2 node server.js > /tmp/server-test.log 2>&1 || true
 
-if grep -q "Workspace CMMC Audit MCP server running on stdio" /tmp/server-test.log; then
+if grep -q "MCP server running on stdio" /tmp/server-test.log; then
     echo "✓ Server started successfully!"
 else
     echo "⚠ Server test completed (check for any errors above)"
@@ -510,13 +510,13 @@ echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓�
 echo "   Installation Complete! 🎉"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
-echo "Your Google Workspace CMMC Audit Tool is ready!"
+echo "Your Google Workspace Compliance Audit Tool is ready!"
 echo ""
 echo "NEXT STEPS:"
 echo ""
 echo "1. RESTART Claude Desktop (Cmd+Q, then reopen)"
 echo "2. Start a new conversation in Claude Desktop"
-echo "3. Type: 'Start a CMMC audit for yourdomain.com'"
+echo "3. Type: 'Start a Google Workspace audit for yourdomain.com'"
 echo "4. Answer the business context questions"
 echo "5. Claude will run 18 checks and guide you through the audit"
 echo ""

@@ -93,7 +93,7 @@ This tool provides automated assessment capabilities but does not replace profes
 ### Already Installed?
 
 1. **Open Claude Desktop**
-2. **Type:** `Start a compliance audit for yourdomain.com`
+2. **Type:** `Start a Google Workspace audit for yourdomain.com`
 3. **Select frameworks** when prompted (CMMC, HIPAA, NIST 800-171, etc.)
 4. **Answer** the business context questions
 5. **Claude will run 19 checks** across 5 phases with Q&A after each
@@ -266,7 +266,7 @@ The installer will:
 
 **After installation completes:**
 1. Restart Claude Desktop (Cmd+Q, then reopen)
-2. Type: `Start a compliance audit for yourdomain.com`
+2. Type: `Start a Google Workspace audit for yourdomain.com`
 
 ---
 
@@ -690,11 +690,16 @@ Check license utilization for yourdomain.com
 ### Example Workflow
 
 ```
-User: "Start a compliance audit for valleytechpartners.com with CMMC and HIPAA"
+User: "Start a Google Workspace audit for valleytechpartners.com"
 
 Claude:
-"I'll conduct a comprehensive compliance audit of valleytechpartners.com
-for the selected frameworks: CMMC, HIPAA.
+"I'll conduct a comprehensive compliance audit of valleytechpartners.com.
+Which frameworks would you like to assess against? (CMMC, HIPAA, NIST 800-171, etc.)"
+
+User: "CMMC and HIPAA"
+
+Claude:
+"Great, I'll assess against CMMC and HIPAA.
 
 PHASE 0: BUSINESS CONTEXT
 

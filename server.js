@@ -271,7 +271,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       // WORKFLOW ORCHESTRATION
       {
         name: 'start_compliance_audit',
-        description: 'Start a comprehensive compliance audit with guided interactive workflow. User must select which compliance frameworks to assess against. Supported frameworks: CMMC, NIST 800-171, NIST CSF, ISO 27001, HIPAA, FTC Safeguards Rule.',
+        description: 'Start a comprehensive Google Workspace compliance audit with guided interactive workflow. Use this when user says "start a Google Workspace audit" or "start a compliance audit". User must select which compliance frameworks to assess against. Supported frameworks: CMMC, NIST 800-171, NIST CSF, ISO 27001, HIPAA, FTC Safeguards Rule.',
         inputSchema: {
           type: 'object',
           properties: {
