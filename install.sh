@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Google Workspace Compliance Audit Tool - One-Line Installer
-# Usage: curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/install.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/dev/install.sh | bash
+# NOTE: Change 'dev' to 'main' for production use after testing
 
 set -e
 
@@ -122,11 +123,13 @@ if [ -f "../installer/install.sh" ]; then
     chmod +x uninstall.sh
 else
     echo "Downloading latest version from GitHub..."
-    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/server.js -o server.js
-    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/uninstall.sh -o uninstall.sh
-    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/README.md -o README.md
-    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/package.json -o package.json
-    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/package-lock.json -o package-lock.json
+    # Download from dev branch for testing (change to 'main' for production)
+    BRANCH="dev"
+    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/${BRANCH}/server.js -o server.js
+    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/${BRANCH}/uninstall.sh -o uninstall.sh
+    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/${BRANCH}/README.md -o README.md
+    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/${BRANCH}/package.json -o package.json
+    curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/${BRANCH}/package-lock.json -o package-lock.json
     chmod +x uninstall.sh
     echo "✓ Downloaded files"
 fi
