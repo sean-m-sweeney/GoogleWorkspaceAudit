@@ -177,8 +177,8 @@ if (!ADMIN_EMAIL) {
 
 const server = new Server(
   {
-    name: 'workspace-cmmc-audit',
-    version: '1.0.0',
+    name: 'workspace-compliance-audit',
+    version: '1.1.0',
   },
   {
     capabilities: {
