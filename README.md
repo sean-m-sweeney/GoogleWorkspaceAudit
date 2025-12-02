@@ -1,6 +1,8 @@
 # Google Workspace Compliance Audit Tool
 
-An automated security audit tool for Google Workspace environments, designed to assess compliance with multiple regulatory frameworks. Built using Claude's Model Context Protocol (MCP) for AI-powered analysis with interactive Q&A workflows.
+An automated security audit tool for Google Workspace environments, designed to assess compliance with multiple regulatory frameworks. Built using the Model Context Protocol (MCP) for AI-powered analysis with interactive Q&A workflows.
+
+**Supports:** Claude Desktop, ChatGPT Desktop
 
 ## Supported Compliance Frameworks
 
@@ -20,10 +22,10 @@ Select one or more frameworks when starting an audit to get tailored compliance 
 ## Important: AI Usage & Data Access
 
 ### 🤖 AI-Powered Tool
-This tool uses **Claude AI** (via Claude Desktop) to analyze your Google Workspace configuration. Before using this tool:
+This tool uses AI (via **Claude Desktop** or **ChatGPT Desktop**) to analyze your Google Workspace configuration. Before using this tool:
 
 - **Get leadership approval** for using AI in your compliance assessment workflow
-- Understand that configuration data from your Google Workspace will be processed by Claude
+- Understand that configuration data from your Google Workspace will be processed by your chosen AI
 - Review your organization's AI usage policies to ensure this aligns with your guidelines
 
 ### 🔒 Read-Only Access
@@ -51,7 +53,9 @@ The Google API scopes requested are all read-only (`*.readonly`). This tool cann
   - Must show v18.0.0 or higher
 - **Google Workspace domain** with admin access
 - **Google Cloud Platform** account (free tier is sufficient)
-- **Claude Desktop** application - [Download from claude.ai](https://claude.ai/download)
+- **AI Desktop Client** (one or both):
+  - **Claude Desktop** - [Download from claude.ai](https://claude.ai/download)
+  - **ChatGPT Desktop** - [Download from openai.com](https://openai.com/chatgpt/download) (requires Plus/Pro/Enterprise)
 
 **Before You Start:**
 ```bash
@@ -92,11 +96,11 @@ This tool provides automated assessment capabilities but does not replace profes
 
 ### Already Installed?
 
-1. **Open Claude Desktop**
+1. **Open your AI client** (Claude Desktop or ChatGPT Desktop)
 2. **Type:** `Start a Google Workspace audit for yourdomain.com`
 3. **Select frameworks** when prompted (CMMC, HIPAA, NIST 800-171, etc.)
 4. **Answer** the business context questions
-5. **Claude will run 19 checks** across 5 phases with Q&A after each
+5. **AI will run 19 checks** across 5 phases with Q&A after each
 6. **Provide screenshots** when asked for manual verification items
 7. **Get your comprehensive report** with compliance scores per framework
 
@@ -110,7 +114,14 @@ Run this one command in your Mac terminal:
 curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/install.sh | bash
 ```
 
-The installer walks you through **everything** - Google Cloud setup, credentials, Claude Desktop config, and testing.
+The installer will:
+- Ask which AI client(s) you want to configure (Claude, ChatGPT, or both)
+- Walk you through Google Cloud setup and credentials
+- Configure your selected AI client(s)
+- Test everything
+
+**Note for ChatGPT users:** After installation, enable MCP in ChatGPT:
+Settings → Connectors → Advanced → Developer Mode
 
 ---
 

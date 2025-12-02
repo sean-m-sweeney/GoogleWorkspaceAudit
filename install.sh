@@ -2,6 +2,7 @@
 
 # Google Workspace Compliance Audit Tool - One-Line Installer
 # Usage: curl -sSL https://raw.githubusercontent.com/sean-m-sweeney/GoogleWorkspaceAudit/main/install.sh | bash
+# Supports: Claude Desktop, ChatGPT Desktop
 
 set -e
 
@@ -53,31 +54,80 @@ fi
 
 echo "✓ Node.js $(node --version) detected"
 
-# Check Claude Desktop
-if [ ! -d "/Applications/Claude.app" ]; then
-    echo "⚠  Claude Desktop not detected at /Applications/Claude.app"
-    echo "   The installer will configure Claude Desktop integration,"
-    echo "   but you'll need to install Claude Desktop to use it."
-    echo "   Download from: https://claude.ai/download"
+# Detect available AI clients
+CLAUDE_AVAILABLE=false
+CHATGPT_AVAILABLE=false
+
+if [ -d "/Applications/Claude.app" ]; then
+    CLAUDE_AVAILABLE=true
+    echo "✓ Claude Desktop detected"
+fi
+
+if [ -d "/Applications/ChatGPT.app" ]; then
+    CHATGPT_AVAILABLE=true
+    echo "✓ ChatGPT Desktop detected"
+fi
+
+if [ "$CLAUDE_AVAILABLE" = false ] && [ "$CHATGPT_AVAILABLE" = false ]; then
+    echo "⚠  No supported AI clients detected"
+    echo "   Supported clients:"
+    echo "   - Claude Desktop: https://claude.ai/download"
+    echo "   - ChatGPT Desktop: https://openai.com/chatgpt/download"
     echo ""
     read -p "Continue anyway? (y/N): " -n 1 -r < /dev/tty
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         echo "Installation cancelled."
-        echo "Install Claude Desktop first, then run this installer again."
         exit 0
     fi
-else
-    echo "✓ Claude Desktop detected"
 fi
 
 echo ""
 echo "✓ All prerequisites met!"
 echo ""
 
-# Step 2: Setup Project Directory
+# Step 2: Select AI Client(s)
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-echo "   STEP 2: Setting Up Project Directory"
+echo "   STEP 2: Select AI Client(s)"
+echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+echo ""
+echo "Which AI client(s) would you like to configure?"
+echo ""
+echo "  1) Claude Desktop"
+echo "  2) ChatGPT Desktop"
+echo "  3) Both"
+echo ""
+read -p "Enter choice (1-3): " -n 1 -r CLIENT_CHOICE < /dev/tty
+echo ""
+
+CONFIGURE_CLAUDE=false
+CONFIGURE_CHATGPT=false
+
+case $CLIENT_CHOICE in
+    1)
+        CONFIGURE_CLAUDE=true
+        echo "✓ Will configure Claude Desktop"
+        ;;
+    2)
+        CONFIGURE_CHATGPT=true
+        echo "✓ Will configure ChatGPT Desktop"
+        ;;
+    3)
+        CONFIGURE_CLAUDE=true
+        CONFIGURE_CHATGPT=true
+        echo "✓ Will configure both Claude Desktop and ChatGPT Desktop"
+        ;;
+    *)
+        echo "Invalid choice. Defaulting to Claude Desktop."
+        CONFIGURE_CLAUDE=true
+        ;;
+esac
+
+echo ""
+
+# Step 3: Setup Project Directory
+echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+echo "   STEP 3: Setting Up Project Directory"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
 
@@ -138,7 +188,7 @@ if [ ! -f "package.json" ]; then
     cat > package.json << 'PACKAGE_EOF'
 {
   "name": "workspace-compliance-audit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "Google Workspace Compliance Audit Tool - Multi-Framework Support",
   "main": "server.js",
@@ -185,10 +235,10 @@ GOOGLE_WORKSPACE_ADMIN_EMAIL=admin@yourdomain.com
 ENV_EXAMPLE_EOF
 echo "✓ Created .env.example"
 
-# Step 3: Install Dependencies
+# Step 4: Install Dependencies
 echo ""
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-echo "   STEP 3: Installing Dependencies"
+echo "   STEP 4: Installing Dependencies"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
 
@@ -297,9 +347,9 @@ fi
 echo "✓ All dependencies verified"
 echo ""
 
-# Step 4: Google Cloud Setup Guide
+# Step 5: Google Cloud Setup Guide
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-echo "   STEP 4: Google Cloud & Workspace Setup"
+echo "   STEP 5: Google Cloud & Workspace Setup"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
 echo "You need to set up a Google Service Account with domain-wide delegation."
@@ -330,10 +380,10 @@ echo "4. The file will download"
 echo ""
 read -p "Press Enter when you've downloaded the credentials file..." < /dev/tty
 
-# Step 5: Configure Credentials
+# Step 6: Configure Credentials
 echo ""
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-echo "   STEP 5: Configuring Credentials"
+echo "   STEP 6: Configuring Credentials"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
 
@@ -384,10 +434,10 @@ echo "8. Click Authorize"
 echo ""
 read -p "Press Enter when you've completed domain-wide delegation..." < /dev/tty
 
-# Step 6: Configure Admin Email
+# Step 7: Configure Admin Email
 echo ""
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-echo "   STEP 6: Configuring Admin Email"
+echo "   STEP 7: Configuring Admin Email"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
 
@@ -431,29 +481,30 @@ chmod 600 .env
 echo "✓ Created .env file with admin email: $ADMIN_EMAIL"
 echo "✓ File permissions set to 600 (owner read/write only)"
 echo ""
-echo "🔒 SECURITY NOTE: Your email is now stored in .env which is:"
+echo "SECURITY NOTE: Your email is now stored in .env which is:"
 echo "   ✓ Excluded from git via .gitignore"
 echo "   ✓ Protected with 600 permissions"
 echo "   ✓ Never committed to version control"
 
-# Step 7: Configure Claude Desktop
-echo ""
-echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-echo "   STEP 7: Configuring Claude Desktop"
-echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-echo ""
-
-CLAUDE_CONFIG="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
-mkdir -p "$(dirname "$CLAUDE_CONFIG")"
-
-# Find node path
+# Find node path (used by both clients)
 NODE_PATH=$(which node)
 
-# Create or update config
-if [ -f "$CLAUDE_CONFIG" ]; then
-    echo "✓ Loaded existing Claude Desktop config"
-    # Use python to update JSON (safer than sed)
-    python3 << PYTHON_EOF
+# Step 8: Configure AI Client(s)
+echo ""
+echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+echo "   STEP 8: Configuring AI Client(s)"
+echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+echo ""
+
+# Configure Claude Desktop
+if [ "$CONFIGURE_CLAUDE" = true ]; then
+    echo "Configuring Claude Desktop..."
+    CLAUDE_CONFIG="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+    mkdir -p "$(dirname "$CLAUDE_CONFIG")"
+
+    if [ -f "$CLAUDE_CONFIG" ]; then
+        echo "✓ Loaded existing Claude Desktop config"
+        python3 << PYTHON_EOF
 import json
 with open('$CLAUDE_CONFIG', 'r') as f:
     config = json.load(f)
@@ -467,8 +518,8 @@ config['mcpServers']['workspace-audit'] = {
 with open('$CLAUDE_CONFIG', 'w') as f:
     json.dump(config, f, indent=2)
 PYTHON_EOF
-else
-    cat > "$CLAUDE_CONFIG" << CONFIG_EOF
+    else
+        cat > "$CLAUDE_CONFIG" << CONFIG_EOF
 {
   "mcpServers": {
     "workspace-audit": {
@@ -479,16 +530,58 @@ else
   }
 }
 CONFIG_EOF
+    fi
+    echo "✓ Claude Desktop configured"
+    echo "  Config: $CLAUDE_CONFIG"
+    echo ""
 fi
 
-echo "✓ Claude Desktop configured"
-echo "  Node: $NODE_PATH"
-echo "  Server: $INSTALL_DIR/server.js"
+# Configure ChatGPT Desktop
+if [ "$CONFIGURE_CHATGPT" = true ]; then
+    echo "Configuring ChatGPT Desktop..."
+    CHATGPT_CONFIG="$HOME/Library/Application Support/com.openai.chat/mcp.json"
+    mkdir -p "$(dirname "$CHATGPT_CONFIG")"
 
-# Step 8: Test Server
-echo ""
+    if [ -f "$CHATGPT_CONFIG" ]; then
+        echo "✓ Loaded existing ChatGPT Desktop config"
+        python3 << PYTHON_EOF
+import json
+with open('$CHATGPT_CONFIG', 'r') as f:
+    config = json.load(f)
+if 'mcpServers' not in config:
+    config['mcpServers'] = {}
+config['mcpServers']['workspace-audit'] = {
+    'command': '$NODE_PATH',
+    'args': ['$INSTALL_DIR/server.js'],
+    'cwd': '$INSTALL_DIR'
+}
+with open('$CHATGPT_CONFIG', 'w') as f:
+    json.dump(config, f, indent=2)
+PYTHON_EOF
+    else
+        cat > "$CHATGPT_CONFIG" << CONFIG_EOF
+{
+  "mcpServers": {
+    "workspace-audit": {
+      "command": "$NODE_PATH",
+      "args": ["$INSTALL_DIR/server.js"],
+      "cwd": "$INSTALL_DIR"
+    }
+  }
+}
+CONFIG_EOF
+    fi
+    echo "✓ ChatGPT Desktop configured"
+    echo "  Config: $CHATGPT_CONFIG"
+    echo ""
+    echo "NOTE: ChatGPT requires MCP to be enabled in Developer Mode:"
+    echo "  Settings → Connectors → Advanced → Developer Mode"
+    echo ""
+fi
+
+# Step 9: Test Server
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-echo "   STEP 8: Testing Server"
+echo "   STEP 9: Testing Server"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
 echo "Starting server test..."
@@ -505,22 +598,34 @@ fi
 
 rm -f /tmp/server-test.log
 
-# Step 9: Success!
+# Step 10: Success!
 echo ""
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-echo "   Installation Complete! 🎉"
+echo "   Installation Complete!"
 echo "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
 echo ""
 echo "Your Google Workspace Compliance Audit Tool is ready!"
 echo ""
 echo "NEXT STEPS:"
 echo ""
-echo "1. RESTART Claude Desktop (Cmd+Q, then reopen)"
-echo "2. Start a new conversation in Claude Desktop"
-echo "3. Type: 'Start a Google Workspace audit for yourdomain.com'"
-echo "4. Answer the business context questions"
-echo "5. Claude will run 18 checks and guide you through the audit"
-echo ""
+
+if [ "$CONFIGURE_CLAUDE" = true ]; then
+    echo "FOR CLAUDE DESKTOP:"
+    echo "  1. Restart Claude Desktop (Cmd+Q, then reopen)"
+    echo "  2. Start a new conversation"
+    echo "  3. Type: 'Start a Google Workspace audit for yourdomain.com'"
+    echo ""
+fi
+
+if [ "$CONFIGURE_CHATGPT" = true ]; then
+    echo "FOR CHATGPT DESKTOP:"
+    echo "  1. Enable MCP: Settings → Connectors → Advanced → Developer Mode"
+    echo "  2. Restart ChatGPT Desktop (Cmd+Q, then reopen)"
+    echo "  3. Start a new conversation"
+    echo "  4. Type: 'Start a Google Workspace audit for yourdomain.com'"
+    echo ""
+fi
+
 echo "SECURITY:"
 echo ""
 echo "  ✓ .env is gitignored (your email is protected)"
@@ -534,8 +639,8 @@ echo "  README:   $INSTALL_DIR/README.md"
 echo ""
 echo "TROUBLESHOOTING:"
 echo ""
-echo "  If Claude says 'Server disconnected':"
-echo "  - Make sure you restarted Claude Desktop (Cmd+Q)"
+echo "  If your AI client says 'Server disconnected':"
+echo "  - Make sure you restarted the application (Cmd+Q)"
 echo "  - Check credentials.json is in: $INSTALL_DIR"
 echo "  - Check .env file exists with your admin email"
 echo "  - Verify domain-wide delegation is configured"
